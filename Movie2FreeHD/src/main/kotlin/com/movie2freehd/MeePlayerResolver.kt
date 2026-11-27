@@ -18,7 +18,8 @@ internal class MeePlayerResolver(
         if (page.status !in 200..299) return null
         val uri = URI(page.url)
         if (!isMeePlayer(page.url)) return null
-        val id = Regex("/(?:p2p|play)/([a-fA-F0-9]{32,64})(?:/|$)").find(uri.path)?.groupValues?.get(1) ?: return null
+        val id = (if (uri.host.equals(v2Host, ignoreCase = true)) v2Path.matchEntire(uri.path) else legacyPath.find(uri.path))
+            ?.groupValues?.get(1) ?: return null
         val origin = "${uri.scheme}://${uri.rawAuthority}"
         val token = uri.rawQuery.orEmpty().split('&').firstOrNull { it.substringBefore('=') == "t" }
             ?.substringAfter('=', "")?.let { URLDecoder.decode(it, "UTF-8") }.orEmpty()
@@ -40,9 +41,12 @@ internal class MeePlayerResolver(
 
     companion object {
         private val json = ObjectMapper()
+        private const val v2Host = "player.meeplayerv2.com"
+        private val v2Path = Regex("/embed/([a-fA-F0-9]{32,64})/?")
+        private val legacyPath = Regex("/(?:p2p|play)/([a-fA-F0-9]{32,64})(?:/|$)")
         fun isMeePlayer(url: String): Boolean = runCatching {
             val host = URI(url).host.orEmpty().lowercase()
-            host == "meeplayer.com" || host.endsWith(".meeplayer.com")
+            host == v2Host || host == "meeplayer.com" || host.endsWith(".meeplayer.com")
         }.getOrDefault(false)
     }
 }

@@ -41,8 +41,45 @@ class MeePlayerResolverTest {
             assertNull(resolver.resolve(embed, "https://movie2freehd.com/"))
         }
     }
+    @Test fun `resolves the embed on the current Meeplayer host`() = runBlocking {
+        val v2Origin = "https://player.meeplayerv2.com"
+        val redirected = "$v2Origin/embed/$id"
+        val referer = "https://movie2freehd.com/movies/example/"
+        val master = "https://cdn.example/master.m3u8"
+        for (initial in listOf(embed, redirected)) {
+            val resolver = MeePlayerResolver(
+                get = { url, ref ->
+                    when (url) {
+                        initial -> {
+                            assertEquals(referer, ref)
+                            PlayerPage(redirected, "player")
+                        }
+                        "$v2Origin/api/video/$id" -> {
+                            assertEquals(redirected, ref)
+                            PlayerPage(url, """{"success":true,"video":{"md5":"$id","iStatus":1}}""")
+                        }
+                        else -> error("Unexpected GET: $url")
+                    }
+                },
+                post = { url, ref, payload ->
+                    assertEquals("$v2Origin/api/resolve", url)
+                    assertEquals(redirected, ref)
+                    assertEquals(mapOf("md5" to id, "videoId" to id, "hasSubtitle" to false), payload)
+                    PlayerPage(url, """{"videoUrl":"$master"}""")
+                }
+            )
+            assertTrue(MeePlayerResolver.isMeePlayer(initial))
+            assertEquals(ResolvedStream(master, redirected, null, null), resolver.resolve(initial, referer))
+        }
+    }
+
     @Test fun `blocked redirect and foreign host do not call playback APIs`() = runBlocking {
-        for (url in listOf("https://meeplayer.com/blocked", "https://unrelated.example/p2p/$id")) {
+        for (url in listOf(
+            "https://meeplayer.com/blocked",
+            "https://unrelated.example/p2p/$id",
+            "https://player.meeplayerv2.com/other/embed/$id",
+            "https://player.meeplayerv2.com.example/embed/$id",
+        )) {
             var calls = 0
             val resolver = MeePlayerResolver({ _, _ -> calls++; PlayerPage(url, "") }, { _, _, _ -> error("Unexpected POST") })
             assertNull(resolver.resolve(embed, "https://movie2freehd.com/"))

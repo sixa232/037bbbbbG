@@ -58,7 +58,7 @@
 
 - รอบแก้ repository/samples: 037-HDD v15, 25-HD v10, Moviedofree v11, Movie2FreeHD v10,
   AHDZero v10, 24HD v10, ThaiAnime v15; รอบนั้นแก้ URL ติดตั้งและ manifest ให้ชี้ poppo112/037bbbb
-  ปลายทางปัจจุบันเปลี่ยนเป็น k2923/037bbbbb ตามหัวข้อรอบแก้ด้านบน
+  ปลายทางครั้งถัดไปเปลี่ยนเป็น k2923/037bbbbb ก่อนย้ายมาใช้ sixa232/037bbbbbG
 - เพิ่มตัวเลือก **(สำรองจาก samples)** อีก 5 แหล่งสำหรับ 24HD/AHDZero/Neko-Miku/AnimeRuka/Suba-Anime
   รวม 17 ตัวเลือกในแอปจาก 12 เว็บไซต์เดิม ดูวิธีใช้และข้อจำกัดท้ายเอกสาร
 
@@ -132,8 +132,8 @@
 
 ## ปลั๊กอินสำหรับ Cloudstream
 
-เพิ่ม repository ด้วย `https://raw.githubusercontent.com/k2923/037bbbbb/master/repo.json`
-หากเคยเพิ่ม repository ของ `jasdwa22/037bb` ให้เพิ่ม URL ด้านบนเพื่อรับเวอร์ชันของ fork นี้
+เพิ่ม repository ด้วย `https://raw.githubusercontent.com/sixa232/037bbbbbG/master/repo.json`
+หากใช้ repository ของ fork เดิม ให้เพิ่ม URL ด้านบนเพื่อรับปลั๊กอินจาก fork นี้
 แล้วติดตั้งหรืออัปเดตปลั๊กอินจาก repository นี้ในรายการส่วนขยาย:
 
 | ปลั๊กอิน | ชื่อแหล่งในแอป | รองรับ |
@@ -145,9 +145,9 @@
 | TwentyFourHD | 24HD | หนังและซีรีส์ แยกตอนตามลิงก์ที่มีจริง |
 | Movie2FreeHD | Movie2FreeHD | หนัง/ซีรีส์ ค้นหา หมวดหมู่ ตอนและแหล่งเสียงไทย/ซับไทย |
 | GoSeries4K | GoSeries4K | ทดลอง: ซีรีส์สด ค้นหา ตอน และ Torbo; ต้องตรวจบน Android |
-| ThaiAnime | Neko-Miku, AnimeRuka, Suba-Anime | ทดลองสำหรับ beta: อนิเมะ/หนัง ค้นหา หมวดหมู่ แยกเสียงและตอน; การเล่นยังต้องทดสอบบนอุปกรณ์ |
+| ThaiAnime | Neko-Miku, AnimeRuka, Suba-Anime, Indy-Anime, Hit-Anime, AnimeYour | ทดลองสำหรับ beta: อนิเมะ/หนัง ค้นหา หมวดหมู่ แยกเสียงและตอน; การเล่นยังต้องทดสอบบนอุปกรณ์ |
 
-ปลั๊กอินเดิมติดตั้งแยกกันได้ ส่วน ThaiAnime ติดตั้งครั้งเดียวจะเพิ่มแหล่งอนิเมะทั้งสามเว็บ สำหรับ 25-HD วิดีโอบางรายการรวมหลายเสียงและคำบรรยายไว้ในลิงก์เดียว
+ปลั๊กอินเดิมติดตั้งแยกกันได้ ส่วน ThaiAnime ติดตั้งครั้งเดียวจะเพิ่มแหล่งอนิเมะทั้งหกเว็บ สำหรับ 25-HD วิดีโอบางรายการรวมหลายเสียงและคำบรรยายไว้ในลิงก์เดียว
 ให้เลือกแทร็กเสียงและคำบรรยายในเครื่องเล่น ความพร้อมของวิดีโอขึ้นอยู่กับเว็บต้นทาง
 
 เวอร์ชัน 037-HDD v7, 25-HD v2 และ Moviedofree v2 เพิ่มหมวดหมู่ตามเมนูของแต่ละเว็บ
@@ -220,7 +220,7 @@ FastCDN ตัวอย่างมี PNG prefix 545 ไบต์ก่อน M
 ทดสอบทุก provider และสร้างแพ็กเกจ:
 
 ```bash
-GITHUB_REPOSITORY=k2923/037bbbbb ./gradlew make makePluginsJson testDebugUnitTest
+GITHUB_REPOSITORY=sixa232/037bbbbbG ./gradlew make makePluginsJson testDebugUnitTest
 ```
 
 ใช้ JDK 17, Android SDK 35 และกำหนด `ANDROID_HOME` ให้ถูกต้อง
@@ -303,8 +303,8 @@ This template as well as the gradle plugin and the whole plugin system is **heav
 สร้างใหม่หลังแก้ samples: `python3 scripts/generate_sample_catalog.py`
 ตรวจว่าไฟล์ที่รวมไว้ตรงกับ samples: `python3 scripts/generate_sample_catalog.py --check`
 
-repo.json และ URL ติดตั้งชี้ที่ `k2923/037bbbbb` แล้ว; workflow ต้องทำงานบน master/main
-หรือกด Run workflow หลังรวมการเปลี่ยนแปลง เพื่อเผยแพร่ไฟล์ใหม่บน builds
+repo.json และ URL ติดตั้งชี้ที่ `sixa232/037bbbbbG`; เปิด GitHub Actions สำหรับ fork นี้
+แล้วรัน Build จาก master หลังรวมการเปลี่ยนแปลง เพื่อเผยแพร่ปลั๊กอินและรายการบน builds
 workflow รันทดสอบก่อนเผยแพร่ และเพิ่ม commit ใหม่บน builds โดยไม่เขียนประวัติทับ
 
 ### ตรวจ regex ที่ใช้บน Android

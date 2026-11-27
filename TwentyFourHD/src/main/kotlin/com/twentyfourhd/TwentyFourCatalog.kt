@@ -56,12 +56,17 @@ internal class TwentyFourCatalog(
     }
 
     suspend fun detail(source: String, fresh: Boolean = false): SiteDetail {
-        val slug = URI(source).path.trim('/').substringAfterLast('/')
+        val path = URI(source).path.trim('/')
+        val slug = path.substringAfterLast('/')
         check(slug.isNotBlank()) { "ไม่พบชื่อหน้า 24HD" }
-        val posts = read("posts", mapOf("slug" to slug, "_embed" to "wp:featuredmedia"), fresh).first
-        val post = posts.firstOrNull {
-            runCatching { URI(it.path("link").asText()).path.trim('/') == URI(source).path.trim('/') }.getOrDefault(false)
-        } ?: error("24HD API ไม่พบเรื่องที่เลือก")
+        suspend fun findPost(params: Map<String, String>): JsonNode? =
+            read("posts", params + ("_embed" to "wp:featuredmedia"), fresh).first.firstOrNull {
+                runCatching { URI(it.path("link").asText()).path.trim('/') == path }.getOrDefault(false)
+            }
+        // The WordPress slug can include an episode range that is absent from the public permalink.
+        val post = findPost(mapOf("slug" to slug))
+            ?: findPost(mapOf("search" to slug.replace('-', ' '), "per_page" to "20"))
+            ?: error("24HD API ไม่พบเรื่องที่เลือก")
         val acf = post.path("acf")
         val title = text(post.path("title").path("rendered").asText())
         check(title.isNotBlank()) { "24HD API ไม่ส่งชื่อเรื่อง" }
