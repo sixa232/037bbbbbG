@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
 import java.io.File
+import java.net.URI
 import java.net.URLDecoder
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -76,6 +77,27 @@ class TwentyFourCatalogTest {
         assertEquals((1..12).toList(), detail.episodes.map { it.number })
         assertEquals(2, detail.episodes.first().players.size)
         assertTrue(detail.episodes.first().players.contains("https://backup.example/ep1"))
+    }
+
+    @Test fun `custom permalink selects the exact post when WordPress uses a different slug`() = runBlocking {
+        val chosen = "$base/copycat"
+        val replies = """
+            [
+                {"slug":"copycat-movie","link":"$base/copycat-movie","title":{"rendered":"Other Copycat"},
+                 "acf":{"file":"https://wrong.example/movie"}},
+                {"slug":"copycat-ep-1-30","link":"$chosen","title":{"rendered":"Copycat EP.1-30"},
+                 "acf":{"ep_list":[{"title":"EP.1","link":"https://player.example/episode1"}]}}
+            ]
+        """.trimIndent()
+        val requests = mutableListOf<String>()
+        val detail = TwentyFourCatalog(base) { url, fresh ->
+            assertTrue(fresh)
+            requests += URI(url).rawQuery
+            CatalogPage(if (url.contains("slug=")) "[]" else replies, 200)
+        }.detail(chosen, fresh = true)
+        assertEquals(listOf("slug=copycat&_embed=wp%3Afeaturedmedia", "search=copycat&per_page=20&_embed=wp%3Afeaturedmedia"), requests)
+        assertEquals("Copycat EP.1-30", detail.title)
+        assertEquals(listOf("https://player.example/episode1"), detail.episodes.single().players)
     }
 
     @Test fun `missing category rejected instead of returning unrelated homepage posts`() = runBlocking {

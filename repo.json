@@ -3,6 +3,6 @@
   "description": "037-HDD Cloudstream plugins",
   "manifestVersion": 1,
   "pluginLists": [
-    "https://raw.githubusercontent.com/k2923/037bbbbb/builds/plugins.json"
+    "https://raw.githubusercontent.com/sixa232/037bbbbbG/builds/plugins.json"
   ]
 }
