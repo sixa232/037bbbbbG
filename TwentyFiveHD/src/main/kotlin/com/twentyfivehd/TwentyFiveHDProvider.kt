@@ -35,6 +35,8 @@ class TwentyFiveHDProvider : MainAPI() {
     private val browserSession by lazy { BrowserSession() }
     private suspend fun document(url: String, fresh: Boolean = false): org.jsoup.nodes.Document {
         val response = if (fresh) app.get(url, interceptor = browserSession, cacheTime = 0) else app.get(url, interceptor = browserSession)
+        if (response.code in 521..524)
+            throw ErrorLoadingException("$name เซิร์ฟเวอร์ต้นทางไม่ตอบสนอง (HTTP ${response.code}) กรุณาลองใหม่ภายหลัง")
         if (response.code !in 200..299) throw ErrorLoadingException("$name โหลดหน้าเว็บไม่ได้ (HTTP ${response.code})")
         return response.document.apply { setBaseUri(response.url) }
     }
