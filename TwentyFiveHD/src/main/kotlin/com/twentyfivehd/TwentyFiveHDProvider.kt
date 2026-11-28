@@ -8,7 +8,10 @@ import com.providers.network.BrowserSession
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 import com.lagradost.cloudstream3.plugins.Plugin
 import com.lagradost.cloudstream3.utils.*
+import java.io.IOException
 import java.net.URLEncoder
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlin.coroutines.cancellation.CancellationException
@@ -35,6 +38,22 @@ class TwentyFiveHDProvider : MainAPI() {
     private val browserSession by lazy { BrowserSession() }
     private suspend fun document(url: String, fresh: Boolean = false): org.jsoup.nodes.Document {
         val response = if (fresh) app.get(url, interceptor = browserSession, cacheTime = 0) else app.get(url, interceptor = browserSession)
+        if (response.code in 521..524)
+            throw ErrorLoadingException("$name เซิร์ฟเวอร์ต้นทางไม่ตอบสนอง (HTTP ${response.code}) กรุณาลองใหม่ภายหลัง")
+        if (response.code !in 200..299) throw ErrorLoadingException("$name โหลดหน้าเว็บไม่ได้ (HTTP ${response.code})")
+        return response.document.apply { setBaseUri(response.url) }
+    }
+
+    private suspend fun latestDocument(url: String): org.jsoup.nodes.Document? {
+        // CloudStream awaits every initial row. Leave the optional root row out
+        // when the origin is slow or down so the category rows can still load.
+        val response = try {
+            app.get(url, interceptor = browserSession, timeout = 25)
+        } catch (_: IOException) {
+            currentCoroutineContext().ensureActive()
+            return null
+        }
+        if (response.code in 521..524) return null
         if (response.code !in 200..299) throw ErrorLoadingException("$name โหลดหน้าเว็บไม่ได้ (HTTP ${response.code})")
         return response.document.apply { setBaseUri(response.url) }
     }
@@ -47,7 +66,9 @@ class TwentyFiveHDProvider : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse = listingRequests.withPermit {
         val url = TwentyFiveParser.pageUrl(request.data, page)
-        val doc = document(url)
+        val doc = if (page == 1 && url == "$mainUrl/") {
+            latestDocument(url) ?: return@withPermit newHomePageResponse(emptyList<HomePageList>(), hasNext = false)
+        } else document(url)
         newHomePageResponse(listOf(HomePageList(request.name, TwentyFiveParser.cards(doc).map { it.response() })), TwentyFiveParser.hasNext(doc))
     }
 

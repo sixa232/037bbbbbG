@@ -173,9 +173,11 @@ internal object SiteCategories {
     // Cloudstream waits for every home row; keep the initial request set small.
     val homeEntries = listOf(
         "/" to "อัปเดตล่าสุด",
-        "/category/ดูหนัง" to "ดูหนังใหม่",
-        "/category/หนังไทย" to "ดูหนังไทยออนไลน์",
-        "/category/ซีรี่ส์-netflix" to "ดูซีรี่ส์ Netflix",
-        "/category/ซีรี่ส์เกาหลี" to "ซีรี่ส์เกาหลี",
+        // Match the site's menu URLs. Requests without the final slash can fail
+        // at the origin before WordPress has a chance to redirect them.
+        "/category/ดูหนัง/" to "ดูหนังใหม่",
+        "/category/หนังไทย/" to "ดูหนังไทยออนไลน์",
+        "/category/ซีรี่ส์-netflix/" to "ดูซีรี่ส์ Netflix",
+        "/category/ซีรี่ส์เกาหลี/" to "ซีรี่ส์เกาหลี",
     )
 }

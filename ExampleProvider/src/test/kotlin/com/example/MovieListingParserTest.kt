@@ -8,6 +8,28 @@ class MovieListingParserTest {
     private val baseUrl = "https://www.037-hdd.com/"
 
     @Test
+    fun `reads current catalog cards with untitled posters and WordPress next links`() {
+        val document = Jsoup.parse("""
+            <section class="panel listing-results"><div class="catalog">
+                <article class="film-card"><a href="/2026/11/28/example/">
+                    <div class="film-poster">
+                        <img src="/poster.jpg" alt="">
+                        <span class="ribbon quality-HD">HD</span>
+                        <small>ดูหนังออนไลน์ IMDb: 6.2</small>
+                    </div>
+                    <strong>Example (2026)</strong>
+                </a></article>
+            </div></section>
+            <a class="next page-numbers" href="/page/2/?0">»</a>
+        """.trimIndent(), baseUrl)
+        assertEquals(
+            MovieListing("Example (2026)", "${baseUrl}2026/11/28/example/", "${baseUrl}poster.jpg"),
+            MovieListingParser.parse(document).single(),
+        )
+        assertTrue(MovieListingParser.hasNextPage(document))
+    }
+
+    @Test
     fun `reads site cards using movie title instead of IMDb paragraph`() {
         val document = Jsoup.parse("""
             <div class="moviefilm">

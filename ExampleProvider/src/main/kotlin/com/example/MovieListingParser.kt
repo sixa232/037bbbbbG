@@ -22,7 +22,7 @@ internal object MovieListingParser {
         val url = anchor.absUrl("href").takeIf { it.isHttpUrl() } ?: return@mapNotNull null
         val image = card.selectFirst("img")
         // The image link has no title, and the first paragraph contains the IMDb score.
-        val title = card.selectFirst(".movief a, h2, h3, .title, .movie-title")?.text().orEmpty()
+        val title = card.selectFirst(".movief a, h2, h3, .title, .movie-title, .film-card > a > strong")?.text().orEmpty()
             .ifBlank { anchor.attr("title") }
             .ifBlank { image?.attr("alt").orEmpty() }
             .ifBlank { card.selectFirst("p")?.text().orEmpty() }.trim()
@@ -36,7 +36,7 @@ internal object MovieListingParser {
     }.distinctBy { it.url }
 
     fun hasNextPage(document: Document): Boolean =
-        CatalogPagination.hasNext(document, "link[rel=next][href], a[rel=next][href], a.nextpostslink[href]")
+        CatalogPagination.hasNext(document, "link[rel=next][href], a[rel=next][href], a.nextpostslink[href], a.next.page-numbers[href]")
 
     private fun String.isHttpUrl(): Boolean = startsWith("https://") || startsWith("http://")
 }
